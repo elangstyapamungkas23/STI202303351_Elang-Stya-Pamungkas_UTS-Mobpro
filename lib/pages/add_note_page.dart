@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart'; // ✅ Tambahkan untuk format tanggal
 import '../models/note_model.dart';
 
 class AddNotePage extends StatefulWidget {
@@ -21,6 +22,7 @@ class _AddNotePageState extends State<AddNotePage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   String? _imagePath;
+  DateTime? _selectedDateTime; // ✅ Tambahan untuk menyimpan waktu kegiatan
 
   @override
   void initState() {
@@ -31,6 +33,8 @@ class _AddNotePageState extends State<AddNotePage> {
       _titleController.text = widget.existingNote!.title;
       _contentController.text = widget.existingNote!.content;
       _imagePath = widget.existingNote!.imagePath;
+      _selectedDateTime =
+          widget.existingNote!.date; // ✅ tampilkan waktu lama jika edit
     }
   }
 
@@ -43,6 +47,35 @@ class _AddNotePageState extends State<AddNotePage> {
         _imagePath = pickedFile.path;
       });
     }
+  }
+
+  // ✅ Tambahan: fungsi pilih tanggal dan waktu
+  Future<void> _pickDateTime() async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateTime ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate == null) return;
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDateTime ?? DateTime.now()),
+    );
+
+    if (pickedTime == null) return;
+
+    setState(() {
+      _selectedDateTime = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
+      );
+    });
   }
 
   void _saveNote() {
@@ -63,12 +96,21 @@ class _AddNotePageState extends State<AddNotePage> {
     final note = NoteModel(
       title: title,
       content: content,
-      date: widget.existingNote?.date ?? DateTime.now(),
+      // ✅ Simpan waktu kegiatan yang dipilih, atau gunakan waktu lama / sekarang
+      date: _selectedDateTime ?? widget.existingNote?.date ?? DateTime.now(),
       imagePath: _imagePath ?? widget.existingNote?.imagePath,
     );
 
     widget.onSave(note);
     Navigator.pop(context);
+
+    // ✅ Tambahan notifikasi berhasil
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Catatan berhasil disimpan ✅"),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -107,6 +149,19 @@ class _AddNotePageState extends State<AddNotePage> {
               decoration: const InputDecoration(
                 labelText: "Isi Catatan",
                 border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // ✅ Tambahan: Pilih tanggal & waktu kegiatan
+            ElevatedButton.icon(
+              onPressed: _pickDateTime,
+              icon: const Icon(Icons.access_time),
+              label: Text(
+                _selectedDateTime == null
+                    ? "Pilih Waktu Kegiatan"
+                    : DateFormat('dd MMM yyyy, HH:mm')
+                        .format(_selectedDateTime!),
               ),
             ),
             const SizedBox(height: 12),

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // ✅ Tambahan untuk format tanggal
 import '../models/note_model.dart';
 import 'add_note_page.dart';
 
@@ -85,6 +86,20 @@ class _HomePageState extends State<HomePage> {
                                     color: Color(0xFF5A4636),
                                   ),
                                 ),
+                                const SizedBox(height: 6),
+
+                                // ✅ Tambahan: tampilkan waktu kegiatan
+
+                                Text(
+                                  DateFormat('dd MMM yyyy, HH:mm')
+                                      .format(note.date),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.brown,
+                                  ),
+                                ),
+
                                 const SizedBox(height: 6),
                                 Text(
                                   note.content,
@@ -195,6 +210,21 @@ class _HomePageState extends State<HomePage> {
                     color: Color(0xFF5A4636),
                   ),
                 ),
+
+                // ✅ Tambahan: tampilkan waktu kegiatan di dialog
+
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, bottom: 10),
+                  child: Text(
+                    "Waktu: ${DateFormat('dd MMM yyyy, HH:mm').format(note.date)}",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.brown,
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 8),
                 Text(
                   note.content,
